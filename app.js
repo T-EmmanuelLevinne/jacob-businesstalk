@@ -22,17 +22,9 @@ const screens = {
   const overlay = document.getElementById('overlay');
   const scareVideo = document.getElementById('scare-video');
   const scareFallback = document.getElementById('scare-fallback');
+  const deviceGuard = document.getElementById('device-guard');
 
-  const funnyWrongLines = [
-    "Close... but not quite.",
-    "Plot twist: that's not it.",
-    "Computing... nope.",
-    "Great confidence. Wrong answer.",
-    "404: Correct answer not found.",
-    "Enhance! Enhance! Still wrong.",
-    "I admire your creativity more than your accuracy.",
-  ];
-
+ 
   const fixedQuestions = [
     { type: 'in', q: '1) Your name?', a: 'jacob' },
     { type: 'in', q: "2) Jacob's favorite person", a: 'justin' },
@@ -208,7 +200,7 @@ async function playSpecificJumpscare(filename) {
       played = false;
     }
     if (played) {
-      // Wait until the video ends, with a timeout fallback
+
       await new Promise((resolve) => {
         const onEnded = () => {
           cleanup();
@@ -225,7 +217,7 @@ async function playSpecificJumpscare(filename) {
         }, durationMs + 300);
       });
     } else {
-      // If autoplay failed, fall back to short flash duration
+    
       await new Promise(r => setTimeout(r, 1800));
     }
     } else {
@@ -257,7 +249,7 @@ async function playSpecificJumpscare(filename) {
     try {
     await playSpecificJumpscare('jacobscare.mp4');
     } catch (_) {
-      // ignore
+
     }
     setTimeout(() => {
       location.href = 'https://www.google.com';
@@ -284,7 +276,7 @@ async function playJumpscare() {
   }
 
   function resolveJumpscareSource() {
-    // Try local file first: /jumpscare.mp4 placed next to index.html
+ 
     return new Promise((resolve) => {
       const testUrl = 'jumpscare.mp4';
       fetch(testUrl, { method: 'HEAD' })
@@ -297,7 +289,7 @@ async function playJumpscare() {
   }
 
   function fallbackImageData() {
-    // Tiny red PNG data URI (acts as a solid flashing screen)
+
     return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
   }
 
@@ -329,6 +321,22 @@ function flashAndScream() {
     osc.start();
     osc.stop(ctx.currentTime + 1.3);
   }
+
+  // Device guard: block desktop/wide screens
+  function isMobileLike() {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const narrow = Math.min(window.innerWidth, window.innerHeight) <= 480;
+    return isTouch && narrow;
+  }
+
+  function updateDeviceGuard() {
+    if (!deviceGuard) return;
+    if (isMobileLike()) deviceGuard.classList.remove('active');
+    else deviceGuard.classList.add('active');
+  }
+
+  updateDeviceGuard();
+  window.addEventListener('resize', updateDeviceGuard);
 
   // Events
   btnPlay.addEventListener('click', () => {
